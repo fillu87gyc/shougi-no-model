@@ -114,6 +114,12 @@ void set_koma() {
 		glTranslated(-20 * 9, 20 * 2, 0);
 	}
 	glPopMatrix();
+	glPushMatrix();
+	glTranslated(20*2, 20, 0);
+	draw_koma();
+	glTranslated(20 * 6, 0, 0);
+	draw_koma();
+	glPopMatrix();
 }
 void Display(void)
 {
