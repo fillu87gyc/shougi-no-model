@@ -1,19 +1,51 @@
-#include <GL/glut.h>
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <GL/glut.h>
+#include <math.h>
+#include "color.h"
+#include "material.h"
+#include "image.h"
+
 int WindowPositionX = 100;  //生成するウィンドウ位置のX座標
 int WindowPositionY = 100;  //生成するウィンドウ位置のY座標
 int WINDOW_W = 800;    //生成するウィンドウの幅
 int WINDOW_H = 800;    //生成するウィンドウの高さ
 char WindowTitle[] = "世界の始まり";  //ウィンドウのタイトル
-
+static color_image4_t texture;
+static char texture_path[] = "img/gin.data";
 //----------------------------------------------------
 // 関数プロトタイプ（後に呼び出す関数名と引数の宣言）
 //----------------------------------------------------
 void Initialize(void);
 void Display(void);
 void Ground(void);  //大地の描画
-
-inline int scaler(int point, int base) {
+void initTexMode(GLenum tex_mode, GLint filter_mode, GLint wrap_mode, GLint env_mode)
+{
+	glTexParameteri(tex_mode, GL_TEXTURE_MAG_FILTER, filter_mode);
+	glTexParameteri(tex_mode, GL_TEXTURE_MIN_FILTER, filter_mode);
+	glTexParameteri(tex_mode, GL_TEXTURE_WRAP_S, wrap_mode);
+	glTexParameteri(tex_mode, GL_TEXTURE_WRAP_T, wrap_mode);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, env_mode);
+}
+void drawTextureCube()
+{
+	glColor3d(1, 0, 0);
+	// positive Y
+	glNormal3d(0.0, 1.0, 0.0);
+	glBegin(GL_QUADS);
+	glTexCoord2d(0.0, 0.0);
+	glVertex3d(-0.5, 0.5, 0.5);
+	glTexCoord2d(1.0, 0.0);
+	glVertex3d(0.5, 0.5, 0.5);
+	glTexCoord2d(1.0, 1.0);
+	glVertex3d(0.5, 0.5, -0.5);
+	glTexCoord2d(0.0, 1.0);
+	glVertex3d(-0.5, 0.5, -0.5);
+	glEnd();
+}
+inline double scaler(int point, double base) {
 	return (point - base);
 }
 void draw_koma() {
@@ -89,11 +121,21 @@ int main(int argc, char *argv[]) {
 //----------------------------------------------------
 void Initialize(void)
 {
-	glClearColor(1.0, 1.0, 1.0, 1.0); //背景色
-	glEnable(GL_DEPTH_TEST);//デプスバッファを使用：glutInitDisplayMode() で GLUT_DEPTH を指定する
+	glClearColor(1.0, 1.0, 1.0, 1.0);
+	// 隠面処理の有効
+	glEnable(GL_DEPTH_TEST);
+	// テクスチャの読み込み
+	load_raw_image(&texture, texture_path);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.image);
+	// テクスチャの設定
 
+	// アルファテストの設定
+	glAlphaFunc(GL_GREATER, 0.7);
 	gluPerspective(30.0, (double)WINDOW_W / (double)WINDOW_H, 0.1, 1000.0); //透視投影法の視体積gluPerspactive(th, w/h, near, far);
-
+// テクスチャの設定
+	//initTexMode(GL_TEXTURE_2D, GL_LINEAR, GL_CLAMP, GL_MODULATE);
+	initTexMode(GL_TEXTURE_2D, GL_LINEAR, GL_CLAMP, GL_REPLACE);
 	gluLookAt(
 		0.0, -200.0, 300.0, // 視点の位置x,y,z;
 		0.0, 0.0, 0.0,   // 視界の中心位置の参照点座標x,y,z
@@ -102,6 +144,11 @@ void Initialize(void)
 //----------------------------------------------------
 // 描画の関数
 //----------------------------------------------------
+void changescale(int index) {
+	if (index == 4)return;
+	if (index > 4)index = 8 - index;
+	glScaled(0.7 + index * 0.05, 0.85 + index * 0.05, 1);
+}
 void set_koma() {
 	glPushMatrix();
 	for (int j = 0; j < 2; j++)
@@ -109,13 +156,20 @@ void set_koma() {
 		for (int i = 0; i < 9; i++)
 		{
 			glTranslated(20, 0, 0);
+			glPushMatrix();
+			if (j == 0)
+				changescale(i);
+			else
+				glScaled(0.67, 0.8, 1);
 			draw_koma();
+			glPopMatrix();
 		}
 		glTranslated(-20 * 9, 20 * 2, 0);
 	}
 	glPopMatrix();
 	glPushMatrix();
-	glTranslated(20*2, 20, 0);
+	//飛車角
+	glTranslated(20 * 2, 20, 0);
 	draw_koma();
 	glTranslated(20 * 6, 0, 0);
 	draw_koma();
@@ -125,21 +179,28 @@ void Display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //バッファの消去
 	Ground();
-	drawboard();
+	//drawboard();
 
-	//コマを並べる
+	////コマを並べる 
+	//glPushMatrix();
+	////左下に調整
+	//glTranslated(-20 * 5, -20 * 4, 0);
+	////set_koma();
+	//glPopMatrix();
+	//glPushMatrix();
+	//glRotated(180, 0, 0, 1);
+	////左下に調整
+	//glTranslated(-20 * 5, -20 * 4, 0);
+	////set_koma();
 	//
-	glPushMatrix();
-	//左下に調整
-	glTranslated(-20 * 5, -20 * 4, 0);
-	set_koma();
-	glPopMatrix();
-	glPushMatrix();
-	glRotated(180, 0, 0, 1);
-	//左下に調整
-	glTranslated(-20 * 5, -20 * 4, 0);
-	set_koma();
-	glPopMatrix();
+	//glPopMatrix();
+	glScaled(10, 10, 10);
+	glEnable(GL_ALPHA_TEST);
+	glEnable(GL_TEXTURE_2D);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
+	drawTextureCube();
+	glDisable(GL_ALPHA_TEST);
+	glDisable(GL_TEXTURE_2D);
 	glutSwapBuffers(); //glutInitDisplayMode(GLUT_DOUBLE)でダブルバッファリングを利用可
 }
 //----------------------------------------------------
