@@ -50,6 +50,7 @@ inline double scaler(int point, double base) {
 }
 void draw_koma() {
 	glPushMatrix();
+
 	glTranslated(0, 0, 10);
 	glTranslated(9, 9, 0);
 	glScaled(0.05, 0.05, 0.05);
@@ -64,7 +65,6 @@ void draw_koma() {
 	glVertex3d(0, 385, 0);
 	glVertex3d(40, 40, 0);
 	glEnd();
-
 	//上面
 	glBegin(GL_POLYGON);
 	glVertex3d(180, 0, 30);
@@ -73,6 +73,23 @@ void draw_koma() {
 	glVertex3d(0, 385, 30);
 	glVertex3d(40, 40, 30);
 	glEnd();
+	//テクスチャ
+	glTranslated(0, 0, 1);
+	glEnable(GL_ALPHA_TEST);
+	glEnable(GL_TEXTURE_2D);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
+	glBegin(GL_QUADS);
+	glTexCoord2d(0, 0);
+	glVertex3d(360, 40, 30);
+	glTexCoord2d(0, 1);
+	glVertex3d(360, 385, 30);
+	glTexCoord2d(1, 1);
+	glVertex3d(0, 385, 30);
+	glTexCoord2d(1, 0);
+	glVertex3d(0, 40, 30);
+	glEnd();
+	glDisable(GL_ALPHA_TEST);
+	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 }
 void drawboard() {
@@ -133,7 +150,7 @@ void Initialize(void)
 	// アルファテストの設定
 	glAlphaFunc(GL_GREATER, 0.7);
 	gluPerspective(30.0, (double)WINDOW_W / (double)WINDOW_H, 0.1, 1000.0); //透視投影法の視体積gluPerspactive(th, w/h, near, far);
-// テクスチャの設定
+	// テクスチャの設定
 	//initTexMode(GL_TEXTURE_2D, GL_LINEAR, GL_CLAMP, GL_MODULATE);
 	initTexMode(GL_TEXTURE_2D, GL_LINEAR, GL_CLAMP, GL_REPLACE);
 	gluLookAt(
@@ -158,8 +175,10 @@ void set_koma() {
 			glTranslated(20, 0, 0);
 			glPushMatrix();
 			if (j == 0)
+				//その他
 				changescale(i);
 			else
+				//歩用のパラメータ
 				glScaled(0.67, 0.8, 1);
 			draw_koma();
 			glPopMatrix();
@@ -179,28 +198,22 @@ void Display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //バッファの消去
 	Ground();
-	//drawboard();
+	drawboard();
 
-	////コマを並べる 
-	//glPushMatrix();
-	////左下に調整
-	//glTranslated(-20 * 5, -20 * 4, 0);
-	////set_koma();
-	//glPopMatrix();
-	//glPushMatrix();
-	//glRotated(180, 0, 0, 1);
-	////左下に調整
-	//glTranslated(-20 * 5, -20 * 4, 0);
-	////set_koma();
-	//
-	//glPopMatrix();
-	glScaled(10, 10, 10);
-	glEnable(GL_ALPHA_TEST);
-	glEnable(GL_TEXTURE_2D);
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
-	drawTextureCube();
-	glDisable(GL_ALPHA_TEST);
-	glDisable(GL_TEXTURE_2D);
+	//コマを並べる 
+	glPushMatrix();
+	//左下に調整
+	glTranslated(-20 * 5, -20 * 4, 0);
+	set_koma();
+	glPopMatrix();
+	glPushMatrix();
+	glRotated(180, 0, 0, 1);
+	//左下に調整
+	glTranslated(-20 * 5, -20 * 4, 0);
+	set_koma();
+
+	glPopMatrix();
+
 	glutSwapBuffers(); //glutInitDisplayMode(GLUT_DOUBLE)でダブルバッファリングを利用可
 }
 //----------------------------------------------------
