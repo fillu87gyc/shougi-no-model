@@ -13,8 +13,18 @@ int WindowPositionY = 100;  //生成するウィンドウ位置のY座標
 int WINDOW_W = 800;    //生成するウィンドウの幅
 int WINDOW_H = 800;    //生成するウィンドウの高さ
 char WindowTitle[] = "世界の始まり";  //ウィンドウのタイトル
-static color_image4_t texture;
-static char texture_path[] = "img/gin.data";
+ color_image4_t texture;
+const char * texture_path[] =
+{
+	"img/kyousha.data",
+	"img/keima.data",
+	"img/gin.data",
+	"img/kin.data",
+	"img/ou.data",
+	"img/hu.data",
+	"img/kaku.data",
+	"img/hisha.data"
+};
 //----------------------------------------------------
 // 関数プロトタイプ（後に呼び出す関数名と引数の宣言）
 //----------------------------------------------------
@@ -28,22 +38,6 @@ void initTexMode(GLenum tex_mode, GLint filter_mode, GLint wrap_mode, GLint env_
 	glTexParameteri(tex_mode, GL_TEXTURE_WRAP_S, wrap_mode);
 	glTexParameteri(tex_mode, GL_TEXTURE_WRAP_T, wrap_mode);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, env_mode);
-}
-void drawTextureCube()
-{
-	glColor3d(1, 0, 0);
-	// positive Y
-	glNormal3d(0.0, 1.0, 0.0);
-	glBegin(GL_QUADS);
-	glTexCoord2d(0.0, 0.0);
-	glVertex3d(-0.5, 0.5, 0.5);
-	glTexCoord2d(1.0, 0.0);
-	glVertex3d(0.5, 0.5, 0.5);
-	glTexCoord2d(1.0, 1.0);
-	glVertex3d(0.5, 0.5, -0.5);
-	glTexCoord2d(0.0, 1.0);
-	glVertex3d(-0.5, 0.5, -0.5);
-	glEnd();
 }
 inline double scaler(int point, double base) {
 	return (point - base);
@@ -74,6 +68,7 @@ void draw_koma() {
 	glVertex3d(40, 40, 30);
 	glEnd();
 	//テクスチャ
+
 	glTranslated(0, 0, 1);
 	glEnable(GL_ALPHA_TEST);
 	glEnable(GL_TEXTURE_2D);
@@ -142,7 +137,7 @@ void Initialize(void)
 	// 隠面処理の有効
 	glEnable(GL_DEPTH_TEST);
 	// テクスチャの読み込み
-	load_raw_image(&texture, texture_path);
+			load_raw_image(&texture, texture_path[0]);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.image);
 	// テクスチャの設定
@@ -180,6 +175,11 @@ void set_koma() {
 			else
 				//歩用のパラメータ
 				glScaled(0.67, 0.8, 1);
+			int index = i;
+			if (index > 4)
+				index = 8 - index;
+			if (j == 0)
+				index = 5;
 			draw_koma();
 			glPopMatrix();
 		}

@@ -60,7 +60,7 @@ typedef struct {
 //	fclose(fp);
 //}
 
-void load_raw_image(color_image4_t *img, char filepath[]) {
+void load_raw_image(color_image4_t *img,const char filepath[]) {
 	FILE *fp;
 	fopen_s(&fp,filepath, "rb");
 	if (fp == NULL) {
