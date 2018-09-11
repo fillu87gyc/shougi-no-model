@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <time.h>
 #include <GL/glut.h>
@@ -13,7 +14,8 @@ int WindowPositionY = 100;  //生成するウィンドウ位置のY座標
 int WINDOW_W = 800;    //生成するウィンドウの幅
 int WINDOW_H = 800;    //生成するウィンドウの高さ
 char WindowTitle[] = "世界の始まり";  //ウィンドウのタイトル
- color_image4_t texture;
+color_image4_t texture;
+GLuint texture_id[8];
 const char * texture_path[] =
 {
 	"img/kyousha.data",
@@ -42,13 +44,14 @@ void initTexMode(GLenum tex_mode, GLint filter_mode, GLint wrap_mode, GLint env_
 inline double scaler(int point, double base) {
 	return (point - base);
 }
+
 void draw_koma() {
 	glPushMatrix();
 
 	glTranslated(0, 0, 10);
 	glTranslated(9, 9, 0);
 	glScaled(0.05, 0.05, 0.05);
-	glColor3d(1, 0, 0);
+	glColor3d(253/255.0 , 251/255.0 ,70/255.0);
 	glRotated(180, 0, 0, 1);
 
 	//下面
@@ -68,7 +71,6 @@ void draw_koma() {
 	glVertex3d(40, 40, 30);
 	glEnd();
 	//テクスチャ
-
 	glTranslated(0, 0, 1);
 	glEnable(GL_ALPHA_TEST);
 	glEnable(GL_TEXTURE_2D);
@@ -137,17 +139,23 @@ void Initialize(void)
 	// 隠面処理の有効
 	glEnable(GL_DEPTH_TEST);
 	// テクスチャの読み込み
-			load_raw_image(&texture, texture_path[0]);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.image);
-	// テクスチャの設定
+	glGenTextures(8, texture_id);
+	for (int i = 0; i < 8; i++)
+	{
+		load_raw_image(&texture, texture_path[i]);
+		glBindTexture(GL_TEXTURE_2D, texture_id[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.image);
 
-	// アルファテストの設定
+		// テクスチャの各種設定
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+	/* テクスチャを拡大・縮小する方法の指定 */
 	glAlphaFunc(GL_GREATER, 0.7);
 	gluPerspective(30.0, (double)WINDOW_W / (double)WINDOW_H, 0.1, 1000.0); //透視投影法の視体積gluPerspactive(th, w/h, near, far);
-	// テクスチャの設定
 	//initTexMode(GL_TEXTURE_2D, GL_LINEAR, GL_CLAMP, GL_MODULATE);
-	initTexMode(GL_TEXTURE_2D, GL_LINEAR, GL_CLAMP, GL_REPLACE);
 	gluLookAt(
 		0.0, -200.0, 300.0, // 視点の位置x,y,z;
 		0.0, 0.0, 0.0,   // 視界の中心位置の参照点座標x,y,z
@@ -178,8 +186,9 @@ void set_koma() {
 			int index = i;
 			if (index > 4)
 				index = 8 - index;
-			if (j == 0)
+			if (j != 0)
 				index = 5;
+			glBindTexture(GL_TEXTURE_2D, texture_id[index]);
 			draw_koma();
 			glPopMatrix();
 		}
@@ -189,8 +198,10 @@ void set_koma() {
 	glPushMatrix();
 	//飛車角
 	glTranslated(20 * 2, 20, 0);
+	glBindTexture(GL_TEXTURE_2D, texture_id[6]);
 	draw_koma();
 	glTranslated(20 * 6, 0, 0);
+	glBindTexture(GL_TEXTURE_2D, texture_id[7]);
 	draw_koma();
 	glPopMatrix();
 }
@@ -213,7 +224,6 @@ void Display(void)
 	set_koma();
 
 	glPopMatrix();
-
 	glutSwapBuffers(); //glutInitDisplayMode(GLUT_DOUBLE)でダブルバッファリングを利用可
 }
 //----------------------------------------------------
