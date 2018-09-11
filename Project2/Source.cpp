@@ -21,7 +21,7 @@ int WindowPositionX = 100;  //生成するウィンドウ位置のX座標
 int WindowPositionY = 100;  //生成するウィンドウ位置のY座標
 int WINDOW_W = 800;    //生成するウィンドウの幅
 int WINDOW_H = 800;    //生成するウィンドウの高さ
-char WindowTitle[] = "世界の始まり";  //ウィンドウのタイトル
+char WindowTitle[] = "仙台高専の藤井四段";  //ウィンドウのタイトル
 color_image4_t texture;
 GLuint texture_id[9];
 const char * texture_path[] =
